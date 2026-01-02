@@ -1,0 +1,236 @@
+Table Banks [headercolor: #175e7a] {
+	id uuid [ pk, not null, unique ]
+	name varchar [ not null ]
+
+	Note: 'Catalogo'
+}
+
+Table Currencies [headercolor: #175e7a] {
+	id uuid [ pk, not null, unique ]
+	code varchar [ not null ]
+	name varchar [ not null ]
+
+	Note: 'Catalogo'
+}
+
+Table TransactionTypes [headercolor: #175e7a] {
+	id uuid [ pk, not null, unique ]
+	name varchar [ not null ]
+
+	Note: 'Catalogo ingreso/gasto/pago'
+}
+
+Table Periods [headercolor: #175e7a] {
+	id uuid [ pk, not null, unique ]
+	period varchar
+
+	Note: 'Catalogo: diaria, semanal, quincenal, mensual, anual'
+}
+
+Table AlertTypes [headercolor: #175e7a] {
+	id uuid [ pk, not null, unique ]
+	type varchar
+
+	Note: 'Catalogo: pago, limite pasado'
+}
+
+Table CardTypes [headercolor: #175e7a] {
+	id uuid [ pk, not null, unique ]
+	type varchar
+
+	Note: 'Catalogo: credito/debito'
+}
+
+Table Users [headercolor: #175e7a] {
+	id uuid [ pk, not null, unique ]
+	first_name varchar [ not null ]
+	last_name varchar [ not null ]
+	email varchar [ not null ]
+	password varchar [ not null ]
+	is_active boolean [ not null, default: true ]
+	registered_at timestamp [ not null, default: `now()` ]
+}
+
+Table Cards [headercolor: #175e7a] {
+	id uuid [ pk, not null, unique ]
+	card_type_id uuid [ not null ]
+	bank_id uuid [ not null ]
+	currency_id uuid [ not null ]
+	user_id uuid [ not null ]
+	four_digits smallint [ not null ]
+	alias varchar [ not null ]
+	current_balance decimal [ not null ]
+	credit_limit decimal
+	credit_used decimal
+	cut_date integer
+	pay_date integer
+	created_at timestamp [ not null ]
+	is_active boolean [ not null ]
+}
+
+Table Categories [headercolor: #175e7a] {
+	id uuid [ pk, not null, unique ]
+	name varchar [ not null ]
+	user_id uuid [ not null ]
+	parent_id uuid
+	type_id uuid
+	created_at timestamp [ not null ]
+
+	Note: 'Tipo (carro, comida, novia, etc.)'
+}
+
+Table Alerts [headercolor: #175e7a] {
+	id uuid [ pk, not null, unique ]
+	user_id uuid [ not null ]
+	alert_type_id uuid [ not null ]
+	title varchar [ not null ]
+	message varchar [ not null ]
+	is_read boolean [ not null ]
+	budget_id uuid [ not null ]
+	card_id uuid [ note: 'no estoy seguro' ]
+	created_at timestamp
+}
+
+Table Transactions [headercolor: #175e7a] {
+	id uuid [ pk, not null, unique ]
+	user_id uuid
+	card_id uuid [ not null ]
+	category_id uuid [ not null ]
+	transaction_type_id uuid
+	amount decimal [ not null ]
+	description varchar [ not null ]
+	transaction_date timestamp [ not null ]
+	related_transaction_id uuid
+	created_at timestamp [ not null ]
+}
+
+Table Budgets [headercolor: #175e7a] {
+	id uuid [ pk, not null, unique ]
+	user_id uuid [ not null ]
+	category_id uuid [ not null ]
+	amount_limit decimal [ not null ]
+	period_id uuid [ not null ]
+	start_date date [ not null ]
+	end_date date [ not null ]
+	created_at timestamp [ not null ]
+	is_active boolean [ not null ]
+}
+
+Table RecurringTransactions [headercolor: #175e7a] {
+	id uuid [ pk, not null, unique ]
+	user_id uuid [ not null ]
+	card_id uuid [ not null ]
+	category_id uuid [ not null ]
+	transaction_type_id uuid [ not null ]
+	period_id uuid [ not null ]
+	amount decimal [ not null ]
+	description varchar [ not null ]
+	start_date date [ not null ]
+	end_date date [ not null ]
+	next_occurence date [ not null ]
+	is_active boolean [ not null ]
+	created_at timestamp [ not null ]
+}
+
+Table Statements [headercolor: #175e7a] {
+	id uuid [ pk, not null, unique ]
+	card_id uuid
+	start_date date
+	end_date date
+	payment_date date
+	period_balance decimal
+	minimum_payment decimal
+	is_paid boolean
+}
+
+Ref fk_Users_id_user_Cards {
+	Users.id < Cards.user_id [ delete: no action, update: no action ]
+}
+
+Ref fk_Users_id_user_Categories {
+	Users.id < Categories.user_id [ delete: no action, update: no action ]
+}
+
+Ref fk_Cards_id_card_type_CardType {
+	Cards.card_type_id > CardTypes.id [ delete: no action, update: no action ]
+}
+
+Ref fk_Cards_id_bank_Banks {
+	Cards.bank_id > Banks.id [ delete: no action, update: no action ]
+}
+
+Ref fk_Cards_id_currency_Currency {
+	Cards.currency_id > Currencies.id [ delete: no action, update: no action ]
+}
+
+Ref fk_Transactions_id_card_Cards {
+	Transactions.card_id > Cards.id [ delete: no action, update: no action ]
+}
+
+Ref fk_Transactions_id_category_Categories {
+	Transactions.category_id > Categories.id [ delete: no action, update: no action ]
+}
+
+Ref fk_Budget_id_user_Users {
+	Budgets.user_id > Users.id [ delete: no action, update: no action ]
+}
+
+Ref fk_Budget_id_category_Categories {
+	Budgets.category_id > Categories.id [ delete: no action, update: no action ]
+}
+
+Ref fk_AlertTypes_id_alert_type_Alert {
+	AlertTypes.id < Alerts.alert_type_id [ delete: no action, update: no action ]
+}
+
+Ref fk_Alert_id_user_Users {
+	Alerts.user_id > Users.id [ delete: no action, update: no action ]
+}
+
+Ref fk_Alert_id_budget_Budget {
+	Alerts.budget_id > Budgets.id [ delete: no action, update: no action ]
+}
+
+Ref fk_RecurringTransaction_id_user_Users {
+	RecurringTransactions.user_id > Users.id [ delete: no action, update: no action ]
+}
+
+Ref fk_RecurringTransaction_id_card_Cards {
+	RecurringTransactions.card_id > Cards.id [ delete: no action, update: no action ]
+}
+
+Ref fk_RecurringTransaction_id_category_Categories {
+	RecurringTransactions.category_id > Categories.id [ delete: no action, update: no action ]
+}
+
+Ref fk_RecurringTransaction_id_transaction_type_TransactionType {
+	RecurringTransactions.transaction_type_id > TransactionTypes.id [ delete: no action, update: no action ]
+}
+
+Ref fk_RecurringTransaction_id_period_Periods {
+	RecurringTransactions.period_id > Periods.id [ delete: no action, update: no action ]
+}
+
+Ref fk_Statements_card_id_Cards {
+	Statements.card_id > Cards.id [ delete: no action, update: no action ]
+}
+
+Ref fk_Transactions_user_id_Users {
+	Transactions.user_id > Users.id [ delete: no action, update: no action ]
+}
+
+Ref fk_Budget_period_id_Periods {
+	Budgets.period_id > Periods.id [ delete: no action, update: no action ]
+}
+
+Ref fk_Transactions_card_id_Cards {
+	Transactions.card_id > Cards.id [ delete: no action, update: no action ]
+}
+
+Ref fk_Transactions_card_id_Cards {
+	Transactions.card_id > Cards.id [ delete: no action, update: no action ]
+}
+
+Ref fk_Transactions_transaction_type_id_TransactionTypes {
+	Transactions.transaction_type_id > TransactionTypes.id [ delete: no action, update: no action ]
+}
