@@ -25,6 +25,3 @@ class User(Base):
         nullable=False
     )
 
-    cards = relationship("Card", back_populates="user")
-    categories = relationship("Category", back_populates="user")
-    budgets = relationship("Budget", back_populates="user")
